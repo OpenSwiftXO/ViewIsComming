@@ -27,14 +27,14 @@ and custom transition experiences.
 Add **ViewIsComming** to your project using **Swift Package Manager (SPM)**:
 
 1.  In Xcode, navigate to **File > Add Packages...**
-2.  Paste the repository URL into the search bar: `https://github.com/tuanemdev/ViewIsComming`
+2.  Paste the repository URL into the search bar: `https://github.com/OpenSwiftXO/ViewIsComming`
 3.  Select the desired version or branch.
 
 Alternatively, add it to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/tuanemdev/ViewIsComming", .exact("0.1.6"))
+    .package(url: "https://github.com/OpenSwiftXO/ViewIsComming", .exact("0.2.0"))
 ]
 ```
 
