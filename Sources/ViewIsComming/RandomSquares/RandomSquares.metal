@@ -13,6 +13,11 @@ half4 randomSquares(float2 position,
                     float progress,
                     float2 squareSize,
                     float smoothness) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     float2 squareCoord = floor(squareSize * uv);

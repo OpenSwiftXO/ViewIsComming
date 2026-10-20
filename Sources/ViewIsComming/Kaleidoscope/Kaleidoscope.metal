@@ -1,12 +1,15 @@
 #include <SwiftUI/SwiftUI_Metal.h>
 #include <metal_stdlib>
+#include "../Constants.metal"
 using namespace metal;
 
+// Kaleidoscope transition
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/kaleidoscope.glsl
 // Author: nwoeanhinnogaehr
 // License: MIT
-// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/kaleidoscope.glsl
-
-#define PI 3.14159265358979323846264
+// SwiftUI single-view adaptation: the "to" side of the original. The view is
+// crossfaded with its kaleidoscoped self, strongest at progress 0.5, and fades
+// in with progress.
 
 [[ stitchable ]] half4 kaleidoscope(float2 position,
                                     SwiftUI::Layer layer,
@@ -15,31 +18,23 @@ using namespace metal;
                                     float speed,
                                     float angle,
                                     float power) {
-    // Normalize coordinates
-    float2 uv = position / size;
-    
-    float2 p = uv - 0.5;
-    float dist = length(p);
-    float theta = atan2(p.y, p.x);
-    
-    float t = progress * speed;
-    theta += angle * sin(t);
-    
-    // Kaleidoscope effect
-    float segments = power;
-    float segmentAngle = 2.0 * PI / segments;
-    theta = fmod(theta, segmentAngle);
-    
-    if (fmod(floor(atan2(p.y, p.x) / segmentAngle), 2.0) == 0.0) {
-        theta = segmentAngle - theta;
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
     }
-    
-    float2 newP = dist * float2(cos(theta), sin(theta)) + 0.5;
-    
-    // Calculate mask
-    float mask = smoothstep(0.0, 1.0, progress);
-    
-    // Sample and apply mask
-    half4 color = layer.sample(newP * size);
-    return color * half(mask);
+
+    float2 p = position / size - 0.5;
+    float t = pow(progress, power) * speed;
+
+    for (int i = 0; i < 7; i++) {
+        p = float2(sin(t) * p.x + cos(t) * p.y, sin(t) * p.y - cos(t) * p.x);
+        t += angle;
+        p = abs(glslMod(p, 2.0) - 1.0);
+    }
+
+    float warp = 1.0 - 2.0 * abs(progress - 0.5);
+    half4 plain = layer.sample(position);
+    half4 folded = layer.sample(p * size);
+
+    return mix(plain, folded, half(warp)) * half(progress);
 }

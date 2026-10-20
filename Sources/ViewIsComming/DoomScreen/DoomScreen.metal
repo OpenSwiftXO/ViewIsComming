@@ -18,6 +18,11 @@ half4 doomScreen(float2 position,
                  float noise,
                  float frequency,
                  float dripScale) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     // Early return for fully visible state (optimization)

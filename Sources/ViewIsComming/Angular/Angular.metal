@@ -10,6 +10,11 @@ half4 angular(float2 position,
               float progress,
               float startingAngle,
               float clockwise) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates to [0, 1]
     float2 uv = position / size;
     // Calculate vector from center (0.5, 0.5) to current position

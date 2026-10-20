@@ -2,59 +2,32 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// Ported from https://github.com/gl-transitions/gl-transitions
-// Author: martiniti
-// License: MIT
+// Inspired by https://github.com/gl-transitions/gl-transitions rectangle (martiniti)
+// SwiftUI single-view adaptation: reveal the view through an axis-aligned
+// rectangle expanding from the center. progress 0 = hidden, 1 = fully visible.
 
 [[ stitchable ]] half4 rectangle(float2 position,
                                  SwiftUI::Layer layer,
                                  float2 size,
                                  float progress) {
-    // Normalize coordinates
-    float2 uv = position / size;
-    
-    // Calculate shrink amount - more dramatic in the middle
-    float s = pow(2.0 * abs(progress - 0.5), 3.0);
-    
-    // Calculate rectangle bounds based on progress
-    float edgeDistance = abs(1.0 - 2.0 * progress);
-    
-    // Bottom-left corner check
-    float2 bl = step(float2(edgeDistance), uv + 0.25);
-    float blMask = bl.x * bl.y;
-    
-    // Top-right corner check
-    float2 tr = step(float2(edgeDistance), 1.25 - uv);
-    float trMask = tr.x * tr.y;
-    
-    // Combined mask: inside rectangle if both corners pass
-    float insideRect = blMask * trMask;
-    
-    // Apply s threshold for smooth transition
-    float dist = 1.0 - insideRect;
-    float alpha = step(s, dist);
-    
-    // Sample the layer
-    half4 color = layer.sample(position);
-    
-    // Determine visibility based on progress phase
-    float mask;
-    if (progress < 0.5) {
-        // First half: showing original view, shrinking rectangle reveals it
-        mask = 1.0 - alpha;
-    } else {
-        // Second half: view should be fully visible
-        mask = 1.0;
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
     }
-    
-    // For transition, we want: 0.0 = hidden, 1.0 = visible
-    // At progress=0: fully visible
-    // At progress=0.5: smallest rectangle (most hidden)
-    // At progress=1.0: fully visible again
-    
-    // Adjust mask to work with transition semantics
-    float finalMask = (progress < 0.5) ? (1.0 - alpha) : alpha;
-    finalMask = mix(0.0, 1.0, finalMask);
-    
-    return color * half(finalMask);
+
+    float2 uv = position / size;
+    float2 d = abs(uv - 0.5);
+    float chebyshev = max(d.x, d.y);
+
+    // Rectangle half-extent grows linearly with progress.
+    // Overshoot by `edge` so that at p=1 the soft border lies outside the view.
+    float edge = 0.02;
+    float halfExtent = (0.5 + edge) * progress;
+    // Correct smoothstep order (edge0 < edge1). 1-smoothstep gives inside=1, outside=0.
+    float mask = 1.0 - smoothstep(halfExtent - edge, halfExtent + edge, chebyshev);
+    // Kill the soft-edge leak near p=0.
+    mask *= saturate(progress * 50.0);
+
+    half4 color = layer.sample(position);
+    return color * half(mask);
 }

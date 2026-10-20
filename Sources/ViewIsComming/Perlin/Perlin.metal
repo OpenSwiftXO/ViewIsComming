@@ -35,6 +35,11 @@ half4 perlin(float2 position,
              float scale,
              float smoothness,
              float seed) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     // Calculate noise

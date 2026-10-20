@@ -3,9 +3,11 @@
 using namespace metal;
 
 // WaterDrop transition
-// Adapted from: https://gl-transitions.com/editor/WaterDrop
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/WaterDrop.glsl
 // Author: Paweł Płóciennik
 // License: MIT
+// SwiftUI single-view adaptation: the appearing view ripples outward from the
+// centre while fading in. Amplitude/speed match the original uniforms.
 
 [[ stitchable ]] half4 waterDrop(float2 position,
                                   SwiftUI::Layer layer,
@@ -13,39 +15,27 @@ using namespace metal;
                                   float progress,
                                   float amplitude,
                                   float speed) {
-    float2 uv = position / size;
-    float2 center = float2(0.5, 0.5);
-    
-    // Calculate distance from center
-    float2 dir = uv - center;
-    float dist = length(dir);
-    
-    // Water drop effect - distortion that grows and moves outward
-    // Only apply distortion in a ring that expands with progress
-    if (dist > 0.0 && progress > 0.0) {
-        // Ring position based on progress
-        float ringDist = abs(dist - progress);
-        
-        // Apply distortion in the ring area
-        float dropFactor = 1.0 - smoothstep(0.0, amplitude, ringDist);
-        
-        // Oscillating distortion
-        float drop = dropFactor * sin(dist * speed - progress * speed);
-        
-        // Displace UV coordinates
-        float2 offset = normalize(dir) * drop * amplitude;
-        position += offset * size;
-        
-        // Ensure position is within bounds
-        position = clamp(position, float2(0.0), size);
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
     }
-    
-    // Sample the layer at the (possibly distorted) position
-    half4 color = layer.sample(position);
-    
-    // Calculate alpha mask - fade out as progress increases
-    // The distorted area gradually becomes transparent
-    float mask = 1.0 - smoothstep(0.0, 1.0, progress);
-    
-    return color * half(mask);
+
+    float2 uv = position / size;
+    float2 dir = uv - 0.5;
+    float dist = length(dir);
+
+    float2 sampleUV = uv;
+    if (dist > progress) {
+        // Outside the drop radius: apply the ripple offset to the view.
+        float2 offset = dir * sin(dist * amplitude - progress * speed) * 0.02;
+        sampleUV = uv + offset;
+    }
+
+    if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
+        sampleUV.y < 0.0 || sampleUV.y > 1.0) {
+        return half4(0.0);
+    }
+
+    half4 color = layer.sample(sampleUV * size);
+    return color * half(progress);
 }

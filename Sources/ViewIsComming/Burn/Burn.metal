@@ -1,7 +1,13 @@
 #include <SwiftUI/SwiftUI_Metal.h>
 #include <metal_stdlib>
-#include "../Constants.metal"
 using namespace metal;
+
+// Burn transition
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/burn.glsl
+// Author: gre
+// License: MIT
+// SwiftUI single-view adaptation: the "to" branch of the original, i.e. the
+// view brightened toward `color` by (1 - progress) and weighted by progress.
 
 [[ stitchable ]]
 half4 burn(float2 position,
@@ -9,16 +15,18 @@ half4 burn(float2 position,
            float2 size,
            float progress,
            float3 color) {
-    // Sample the original pixel color from the view
-    half4 sampledColor = layer.sample(position);
-    // Calculate burn intensity using sine curve for smooth easing
-    float burnIntensity = 1.0 - sin(progress * PI / 2.0);
-    // Create the burn color by multiplying the input color with intensity
-    half3 burnColor = half3(color) * half(burnIntensity);
-    // Add the burn color to the original image color (additive blending)
-    sampledColor.rgb += burnColor;
-    // Apply alpha mask for transition visibility
-    sampledColor.a *= half(progress);
-    
-    return sampledColor;
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
+    half4 view = layer.sample(position);
+    half p = half(progress);
+
+    // Layer samples are premultiplied, so the burn colour is scaled by alpha.
+    half3 lit = view.rgb + half3(color) * (1.0h - p) * view.a;
+    half alpha = view.a * p;
+
+    // Keep the premultiplied result valid (rgb <= alpha).
+    return half4(min(lit * p, half3(alpha)), alpha);
 }

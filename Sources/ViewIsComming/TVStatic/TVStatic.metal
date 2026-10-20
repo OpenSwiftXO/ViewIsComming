@@ -3,11 +3,13 @@
 using namespace metal;
 
 // TVStatic transition
-// Adapted from: https://gl-transitions.com/editor/TVStatic
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/TVStatic.glsl
 // Author: Brandon Anzaldi
 // License: MIT
+// SwiftUI single-view adaptation: before `offset` nothing is visible (the
+// original "from" image would be there), during the middle the static noise
+// fills the frame, after `1 - offset` the sampled view fades in.
 
-// Pseudo-random noise function
 float tvStaticNoise(float2 co, float progress) {
     float a = 12.9898;
     float b = 78.233;
@@ -22,22 +24,29 @@ float tvStaticNoise(float2 co, float progress) {
                                  float2 size,
                                  float progress,
                                  float offset) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
-    
-    // At the beginning and end, show the normal image
-    // In the middle, show static
-    if (progress < offset) {
-        // Still showing original, but fading out
-        half4 color = layer.sample(position);
-        float mask = 1.0 - (progress / offset);
-        return color * half(mask);
-    } else if (progress > (1.0 - offset)) {
-        // Should show next image, but we're transitioning out
-        // So fade to transparent
-        return half4(0.0);
+    float safeOffset = max(offset, 0.0001);
+
+    if (progress < safeOffset) {
+        // Fade noise in over nothing. The layer isn't visible yet.
+        float noise = tvStaticNoise(uv, max(progress, 0.0001));
+        float t = progress / safeOffset;
+        return half4(half3(noise), 1.0) * half(t);
+    } else if (progress > 1.0 - safeOffset) {
+        // Cross-fade noise out to the sampled view.
+        float noise = tvStaticNoise(uv, 1.0 - progress);
+        float t = (progress - (1.0 - safeOffset)) / safeOffset;
+        half4 view = layer.sample(position);
+        half4 staticColor = half4(half3(noise), 1.0);
+        return mix(staticColor, view, half(t));
     } else {
-        // Show static noise
+        // Pure static.
         float noise = tvStaticNoise(uv, progress);
-        return half4(half3(noise), 1.0) * half(1.0 - progress);
+        return half4(half3(noise), 1.0);
     }
 }

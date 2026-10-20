@@ -25,49 +25,6 @@ public enum DirectionalWipeDirection {
     }
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
-    static func directionalWipe(
-        direction: DirectionalWipeDirection = .right,
-        smoothness: Double = 0.5
-    ) -> AnyTransition {
-        .modifier(
-            active: DirectionalWipeModifier(
-                progress: 0,
-                direction: direction.vector,
-                smoothness: smoothness
-            ),
-            identity: DirectionalWipeModifier(
-                progress: 1,
-                direction: direction.vector,
-                smoothness: smoothness
-            )
-        )
-    }
-}
-
-struct DirectionalWipeModifier: ViewModifier {
-    let progress: Double
-    let direction: CGVector
-    let smoothness: Double
-    
-    func body(content: Content) -> some View {
-        content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.directionalWipe(
-                            .float2(geometryProxy.size),
-                            .float(progress),
-                            .float2(Float(direction.dx), Float(direction.dy)),
-                            .float(smoothness)
-                        ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
 // MARK: - Transition
 public extension Transition where Self == DirectionalWipeTransition {
     static func directionalWipe(
@@ -86,13 +43,30 @@ public struct DirectionalWipeTransition: Transition {
     let smoothness: Double
     
     public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            DirectionalWipeModifier(
+                progress: phase.isIdentity ? 1 : 0,
+                direction: direction,
+                smoothness: smoothness
+            )
+        )
+    }
+}
+
+// MARK: - Effect
+struct DirectionalWipeModifier: ViewModifier {
+    let progress: Double
+    let direction: CGVector
+    let smoothness: Double
+    
+    func body(content: Content) -> some View {
         content
             .visualEffect { content, geometryProxy in
                 content
                     .layerEffect(
                         ViewIsCommingShaderLibrary.directionalWipe(
                             .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
+                            .float(progress),
                             .float2(Float(direction.dx), Float(direction.dy)),
                             .float(smoothness)
                         ),

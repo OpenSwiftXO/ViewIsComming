@@ -9,8 +9,15 @@ half4 wind(float2 position,
            float progress,
            float windSize,
            float direction) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize pixel coordinates to [0,1] range
     float2 uv = position / size;
+    // smoothstep() needs edge0 < edge1.
+    windSize = max(windSize, 0.0001);
     // Determine primary coordinate based on wind direction
     // coord: position along the wind direction (0.0 to 1.0)
     // perpendicular: position perpendicular to wind (for random seed)
@@ -47,7 +54,10 @@ half4 wind(float2 position,
     // - smoothstep: creates soft edge transition around threshold
     // - When progress < revealThreshold: mask ≈ 0 (hidden)
     // - When progress > revealThreshold: mask ≈ 1 (visible)
-    float mask = smoothstep(revealThreshold - windSize, revealThreshold + windSize, progress * (1.0 + windSize));
+    // front runs over [-windSize, 1 + windSize] so every pixel is hidden at
+    // progress 0 and fully visible at progress 1.
+    float front = mix(-windSize, 1.0 + windSize, progress);
+    float mask = smoothstep(revealThreshold - windSize, revealThreshold + windSize, front);
     // Sample pixel color and apply visibility mask
     half4 color = layer.sample(position);
     return color * half(mask);

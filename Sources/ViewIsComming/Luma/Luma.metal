@@ -8,6 +8,11 @@ half4 luma(float2 position,
            float2 size,
            float progress,
            float patternScale) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
     // Center the coordinates
     float2 centered = uv - 0.5;

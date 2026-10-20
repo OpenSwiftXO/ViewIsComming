@@ -5,24 +5,29 @@ public enum BowTieOrientation: Sendable {
     case vertical
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
+// MARK: - Transition
+public extension Transition where Self == BowTieTransition {
     static func bowTie(
         orientation: BowTieOrientation = .horizontal
-    ) -> AnyTransition {
-        .modifier(
-            active: BowTieModifier(
-                progress: 0,
-                orientation: orientation
-            ),
-            identity: BowTieModifier(
-                progress: 1,
+    ) -> Self {
+        BowTieTransition(orientation: orientation)
+    }
+}
+
+public struct BowTieTransition: Transition {
+    let orientation: BowTieOrientation
+    
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            BowTieModifier(
+                progress: phase.isIdentity ? 1 : 0,
                 orientation: orientation
             )
         )
     }
 }
 
+// MARK: - Effect
 struct BowTieModifier: ViewModifier {
     let progress: Double
     let orientation: BowTieOrientation
@@ -42,40 +47,6 @@ struct BowTieModifier: ViewModifier {
                         : ViewIsCommingShaderLibrary.bowTieVertical(
                             .float2(geometryProxy.size),
                             .float(progress)
-                        ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
-// MARK: - Transition
-public extension Transition where Self == BowTieTransition {
-    static func bowTie(
-        orientation: BowTieOrientation = .horizontal
-    ) -> Self {
-        BowTieTransition(orientation: orientation)
-    }
-}
-
-public struct BowTieTransition: Transition {
-    let orientation: BowTieOrientation
-    
-    public func body(content: Content, phase: TransitionPhase) -> some View {
-        let isHorizontal = orientation == .horizontal
-        
-        return content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        isHorizontal
-                        ? ViewIsCommingShaderLibrary.bowTieHorizontal(
-                            .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0)
-                        )
-                        : ViewIsCommingShaderLibrary.bowTieVertical(
-                            .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0)
                         ),
                         maxSampleOffset: .zero
                     )

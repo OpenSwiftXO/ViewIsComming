@@ -63,6 +63,11 @@ float2 hexagonalize_pointFromHexagon(HexagonalizeHexagon hex, float size, float 
                                     float progress,
                                     float steps,
                                     float horizontalHexagons) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     float ratio = size.y / size.x;
@@ -74,7 +79,8 @@ float2 hexagonalize_pointFromHexagon(HexagonalizeHexagon hex, float size, float 
     
     float2 point = dist > 0.0 ? hexagonalize_pointFromHexagon(hexagonalize_hexagonFromPoint(uv, hexSize, ratio), hexSize, ratio) : uv;
     
-    // Sample at the hexagon center point
+    // Sample at the hexagon center point. Apply progress mask so the view
+    // fades in/out with the transition (progress 0 = hidden, 1 = visible).
     half4 color = layer.sample(point * size);
-    return color;
+    return color * half(progress);
 }

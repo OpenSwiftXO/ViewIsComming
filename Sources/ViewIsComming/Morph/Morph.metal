@@ -3,39 +3,37 @@
 using namespace metal;
 
 // Morph transition
-// Adapted from: https://gl-transitions.com/editor/morph
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/Morph.glsl
 // Author: paniq
 // License: MIT
+// SwiftUI single-view adaptation: the displacement that would have been
+// computed from both images is derived from the appearing view alone.
 
 [[ stitchable ]] half4 morph(float2 position,
                               SwiftUI::Layer layer,
                               float2 size,
                               float progress,
                               float strength) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
-    
-    // Sample the layer at current position
-    half4 color = layer.sample(position);
-    
-    // Calculate offset based on color channels
-    // This creates a morphing distortion based on the image content
-    float2 colorOffset = float2(color.rg) + float(color.b) * 0.5;
-    colorOffset = colorOffset * 2.0 - 1.0;
-    
-    // Apply offset with strength
-    float2 offset = colorOffset * strength;
-    
-    // Apply offset in the direction of transition
-    float2 morphedUV = uv + offset * progress;
-    
-    // Clamp and sample
-    float2 morphedPos = morphedUV * size;
-    morphedPos = clamp(morphedPos, float2(0.0), size);
-    
-    half4 morphedColor = layer.sample(morphedPos);
-    
-    // Fade out as progress increases
-    float mask = 1.0 - progress;
-    
-    return morphedColor * half(mask);
+
+    // Initial sample to compute a content-derived displacement.
+    half4 cb = layer.sample(position);
+    float2 ob = ((float2(cb.r, cb.g) + float(cb.b)) * 0.5) * 2.0 - 1.0;
+    float2 oc = ob * strength;
+
+    float w1 = 1.0 - progress;
+    float2 sampleUV = uv - oc * w1;
+
+    if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
+        sampleUV.y < 0.0 || sampleUV.y > 1.0) {
+        return half4(0.0);
+    }
+
+    half4 color = layer.sample(sampleUV * size);
+    return color * half(progress);
 }

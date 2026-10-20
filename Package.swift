@@ -9,7 +9,6 @@ let package = Package(
         .visionOS(.v2),
         .macOS(.v14),
         .macCatalyst(.v17),
-        .watchOS(.v10),
         .tvOS(.v17),
     ],
     products: [
@@ -21,6 +20,10 @@ let package = Package(
     targets: [
         .target(
             name: "ViewIsComming",
+        ),
+        .testTarget(
+            name: "ViewIsCommingTests",
+            dependencies: ["ViewIsComming"],
         ),
     ],
 )

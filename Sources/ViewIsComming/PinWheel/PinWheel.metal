@@ -8,6 +8,11 @@ half4 pinWheel(float2 position,
                float2 size,
                float progress,
                float blades) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates to [0, 1]
     float2 uv = position / size;
     // Calculate circular position with rotation

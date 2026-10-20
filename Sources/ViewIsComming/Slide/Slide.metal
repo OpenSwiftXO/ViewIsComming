@@ -3,30 +3,26 @@
 using namespace metal;
 
 // Slide transition
-// Adapted from: https://gl-transitions.com/editor/slide
-// Author: Fernando Kuteken
-// License: MIT
+// Single-view adaptation: the view slides in from the given direction without
+// fading. progress 0 = fully off-screen in direction, 1 = in place.
 
 [[ stitchable ]] half4 slide(float2 position,
                               SwiftUI::Layer layer,
                               float2 size,
                               float progress,
                               float2 direction) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
-    
-    // Slide the image in the opposite direction of the specified vector
-    float2 offset = direction * progress;
-    float2 slidUV = uv + offset;
-    
-    // Check if we're still within bounds
-    if (slidUV.x < 0.0 || slidUV.x > 1.0 || slidUV.y < 0.0 || slidUV.y > 1.0) {
+    float2 sampleUV = uv - direction * (1.0 - progress);
+
+    if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
+        sampleUV.y < 0.0 || sampleUV.y > 1.0) {
         return half4(0.0);
     }
-    
-    float2 slidePos = slidUV * size;
-    half4 color = layer.sample(slidePos);
-    
-    // Fade based on progress
-    float mask = 1.0 - progress;
-    return color * half(mask);
+
+    return layer.sample(sampleUV * size);
 }

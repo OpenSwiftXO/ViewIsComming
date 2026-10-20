@@ -16,6 +16,11 @@ half4 bookFlip(float2 position,
                float2 size,
                float progress,
                float flipRight) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates to [0, 1]
     float2 uv = position / size;
     // Mirror UV for left flip

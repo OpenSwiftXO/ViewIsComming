@@ -144,6 +144,11 @@ half4 invertedPageCurl(float2 position,
                        float progress,
                        float directionRightToLeft,
                        float edgeTop) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Store original position for sampling
     float2 originalPos = position;
     // Calculate normalized UV coordinates

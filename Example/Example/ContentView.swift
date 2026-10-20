@@ -4,400 +4,73 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
-                NavigationLink("Angular") {
-                    AngularView()
-                }
-                NavigationLink("BookFlip") {
-                    BookFlipView()
-                }
-                NavigationLink("Bounce") {
-                    BounceView()
-                }
-                NavigationLink("BowTie") {
-                    BowTieView()
-                }
-                NavigationLink("Burn") {
-                    BurnView()
-                }
-                NavigationLink("ButterflyWaveScrawler") {
-                    ButterflyWaveScrawlerView()
-                }
-                NavigationLink("CircleCrop") {
-                    CircleCropView()
-                }
-                NavigationLink("CornerVanish") {
-                    CornerVanishView()
-                }
-                NavigationLink("CrazyParametric") {
-                    CrazyParametricView()
-                }
-                NavigationLink("CrossHatch") {
-                    CrossHatchView()
-                }
-                NavigationLink("CrossZoom") {
-                    CrossZoomView()
-                }
-                NavigationLink("Cube") {
-                    CubeView()
-                }
-                NavigationLink("Directional") {
-                    DirectionalView()
-                }
-                NavigationLink("DirectionalWipe") {
-                    DirectionalWipeView()
-                }
-                NavigationLink("DoomScreen") {
-                    DoomScreenView()
-                }
-                NavigationLink("Doorway") {
-                    DoorwayView()
-                }
-                
-                NavigationLink {
-                    DreamyView()
-                } label: {
-                    Text("Dreamy")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    DreamyZoomView()
-                } label: {
-                    Text("Dreamy Zoom")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FadeView()
-                } label: {
-                    Text("Fade")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FadeColorView()
-                } label: {
-                    Text("Fade Color")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FadeGrayscaleView()
-                } label: {
-                    Text("Fade Grayscale")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FilmBurnView()
-                } label: {
-                    Text("Film Burn")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FlipView()
-                } label: {
-                    Text("Flip")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FlowerView()
-                } label: {
-                    Text("Flower")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FlyEyeView()
-                } label: {
-                    Text("Fly Eye")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    FoldView()
-                } label: {
-                    Text("Fold")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    GlitchDisplaceView()
-                } label: {
-                    Text("Glitch Displace")
-                        .foregroundColor(.red)
-                }
-                
-                NavigationLink("GlitchMemories") {
-                    GlitchMemoriesView()
-                }
-                
-                NavigationLink {
-                    GridFlipView()
-                } label: {
-                    Text("Grid Flip")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    HeartView()
-                } label: {
-                    Text("Heart")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    HexagonalizeView()
-                } label: {
-                    Text("Hexagonalize")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    InterferenceView()
-                } label: {
-                    Text("Interference")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("InvertedPageCurl") {
-                    InvertedPageCurlView()
-                }
-                NavigationLink {
-                    KaleidoscopeView()
-                } label: {
-                    Text("Kaleidoscope")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    LinearBlurView()
-                } label: {
-                    Text("Linear Blur")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("Luma") {
-                    LumaView()
-                }
-                NavigationLink {
-                    LuminanceMeltView()
-                } label: {
-                    Text("Luminance Melt")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    MorphView()
-                } label: {
-                    Text("Morph")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    MosaicView()
-                } label: {
-                    Text("Mosaic")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    MotionBlurView()
-                } label: {
-                    Text("Motion Blur")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    MultiplyBlendView()
-                } label: {
-                    Text("Multiply Blend")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("Perlin") {
-                    PerlinView()
-                }
-                NavigationLink("PinWheel") {
-                    PinWheelView()
-                }
-                NavigationLink {
-                    PixelizeView()
-                } label: {
-                    Text("Pixelize")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    PolarFunctionView()
-                } label: {
-                    Text("Polar Function")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("PolkaDotsCurtain") {
-                    PolkaDotsCurtainView()
-                }
-                NavigationLink {
-                    PowerKaleidoView()
-                } label: {
-                    Text("Power Kaleido")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RadialView()
-                } label: {
-                    Text("Radial")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RadialBlurView()
-                } label: {
-                    Text("Radial Blur")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("RandomNoise") {
-                    RandomNoiseView()
-                }
-                NavigationLink("RandomSquares") {
-                    RandomSquaresView()
-                }
-                NavigationLink {
-                    RectangleView()
-                } label: {
-                    Text("Rectangle")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RippleView()
-                } label: {
-                    Text("Ripple")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RotateView()
-                } label: {
-                    Text("Rotate")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RotateScaleFadeView()
-                } label: {
-                    Text("Rotate Scale Fade")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RotateScaleVanishView()
-                } label: {
-                    Text("Rotate Scale Vanish")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    RotateTransitionView()
-                } label: {
-                    Text("Rotate Transition")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    ScaleInView()
-                } label: {
-                    Text("Scale In")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    SimpleBookCurlView()
-                } label: {
-                    Text("Simple Book Curl")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    SimpleZoomView()
-                } label: {
-                    Text("Simple Zoom")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    SlideView()
-                } label: {
-                    Text("Slide")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    SpinView()
-                } label: {
-                    Text("Spin")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    SpiralView()
-                } label: {
-                    Text("Spiral")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("Split") {
-                    SplitView()
-                }
-                NavigationLink("SquaresWire") {
-                    SquaresWireView()
-                }
-                NavigationLink {
-                    SqueezeView()
-                } label: {
-                    Text("Squeeze")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    StaticFadeView()
-                } label: {
-                    Text("Static Fade")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    StaticWipeView()
-                } label: {
-                    Text("Static Wipe")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("StereoViewer") {
-                    StereoViewerView()
-                }
-                NavigationLink("Swap") {
-                    SwapView()
-                }
-                NavigationLink("Swirl") {
-                    SwirlView()
-                }
-                NavigationLink {
-                    TangentMotionBlurView()
-                } label: {
-                    Text("Tangent Motion Blur")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    TwistedScaleView()
-                } label: {
-                    Text("Twisted Scale")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    TVStaticView()
-                } label: {
-                    Text("TV Static")
-                        .foregroundColor(.red)
-                }
-                NavigationLink("UndulatingBurnOut") {
-                    UndulatingBurnOutView()
-                }
-                NavigationLink {
-                    VHSView()
-                } label: {
-                    Text("VHS")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    WaterDropView()
-                } label: {
-                    Text("Water Drop")
-                        .foregroundColor(.red)
-                }
-                NavigationLink {
-                    WaterfallView()
-                } label: {
-                    Text("Waterfall")
-                        .foregroundColor(.red)
-                }
-                
-                NavigationLink("Wave") {
-                    WaveView()
-                }
-                NavigationLink("Wind") {
-                    WindView()
-                }
-                NavigationLink("WindowBlinds") {
-                    WindowBlindsView()
-                }
-                NavigationLink("WindowSlice") {
-                    WindowSliceView()
-                }
+                NavigationLink("Angular") { AngularView() }
+                NavigationLink("BookFlip") { BookFlipView() }
+                NavigationLink("Bounce") { BounceView() }
+                NavigationLink("BowTie") { BowTieView() }
+                NavigationLink("Burn") { BurnView() }
+                NavigationLink("ButterflyWaveScrawler") { ButterflyWaveScrawlerView() }
+                NavigationLink("CircleCrop") { CircleCropView() }
+                NavigationLink("CornerVanish") { CornerVanishView() }
+                NavigationLink("CrazyParametric") { CrazyParametricView() }
+                NavigationLink("CrossHatch") { CrossHatchView() }
+                NavigationLink("CrossZoom") { CrossZoomView() }
+                NavigationLink("Cube") { CubeView() }
+                NavigationLink("Directional") { DirectionalView() }
+                NavigationLink("DirectionalWipe") { DirectionalWipeView() }
+                NavigationLink("DoomScreen") { DoomScreenView() }
+                NavigationLink("Doorway") { DoorwayView() }
+                NavigationLink("Dreamy") { DreamyView() }
+                NavigationLink("Dreamy Zoom") { DreamyZoomView() }
+                NavigationLink("Fade") { FadeView() }
+                NavigationLink("Fade Color") { FadeColorView() }
+                NavigationLink("Fade Grayscale") { FadeGrayscaleView() }
+                NavigationLink("Flip") { FlipView() }
+                NavigationLink("Fly Eye") { FlyEyeView() }
+                NavigationLink("Fold") { FoldView() }
+                NavigationLink("Glitch Displace") { GlitchDisplaceView() }
+                NavigationLink("GlitchMemories") { GlitchMemoriesView() }
+                NavigationLink("Grid Flip") { GridFlipView() }
+                NavigationLink("Heart") { HeartView() }
+                NavigationLink("Hexagonalize") { HexagonalizeView() }
+                NavigationLink("InvertedPageCurl") { InvertedPageCurlView() }
+                NavigationLink("Kaleidoscope") { KaleidoscopeView() }
+                NavigationLink("Linear Blur") { LinearBlurView() }
+                NavigationLink("Luma") { LumaView() }
+                NavigationLink("Luminance Melt") { LuminanceMeltView() }
+                NavigationLink("Morph") { MorphView() }
+                NavigationLink("Mosaic") { MosaicView() }
+                NavigationLink("Multiply Blend") { MultiplyBlendView() }
+                NavigationLink("Perlin") { PerlinView() }
+                NavigationLink("PinWheel") { PinWheelView() }
+                NavigationLink("Pixelize") { PixelizeView() }
+                NavigationLink("Polar Function") { PolarFunctionView() }
+                NavigationLink("PolkaDotsCurtain") { PolkaDotsCurtainView() }
+                NavigationLink("Power Kaleido") { PowerKaleidoView() }
+                NavigationLink("Radial") { RadialView() }
+                NavigationLink("RandomNoise") { RandomNoiseView() }
+                NavigationLink("RandomSquares") { RandomSquaresView() }
+                NavigationLink("Rectangle") { RectangleView() }
+                NavigationLink("Ripple") { RippleView() }
+                NavigationLink("Rotate Scale Fade") { RotateScaleFadeView() }
+                NavigationLink("Simple Book Curl") { SimpleBookCurlView() }
+                NavigationLink("Simple Zoom") { SimpleZoomView() }
+                NavigationLink("Slide") { SlideView() }
+                NavigationLink("Split") { SplitView() }
+                NavigationLink("SquaresWire") { SquaresWireView() }
+                NavigationLink("Squeeze") { SqueezeView() }
+                NavigationLink("Static Fade") { StaticFadeView() }
+                NavigationLink("Static Wipe") { StaticWipeView() }
+                NavigationLink("StereoViewer") { StereoViewerView() }
+                NavigationLink("Swap") { SwapView() }
+                NavigationLink("Swirl") { SwirlView() }
+                NavigationLink("TV Static") { TVStaticView() }
+                NavigationLink("UndulatingBurnOut") { UndulatingBurnOutView() }
+                NavigationLink("Water Drop") { WaterDropView() }
+                NavigationLink("Wave") { WaveView() }
+                NavigationLink("Wind") { WindView() }
+                NavigationLink("WindowBlinds") { WindowBlindsView() }
+                NavigationLink("WindowSlice") { WindowSliceView() }
             }
             .navigationTitle("View Is Comming")
         }

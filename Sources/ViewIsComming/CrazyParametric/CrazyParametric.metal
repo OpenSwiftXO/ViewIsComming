@@ -11,6 +11,11 @@ half4 crazyParametric(float2 position,
                       float innerRadius,
                       float waveIntensity,
                       float waveSmooth) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     // Calculate direction from center

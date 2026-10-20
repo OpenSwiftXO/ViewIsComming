@@ -25,22 +25,27 @@ public enum DirectionalDirection {
     }
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
-    static func directional(direction: DirectionalDirection = .right) -> AnyTransition {
-        .modifier(
-            active: DirectionalModifier(
-                progress: 0,
-                direction: direction.vector
-            ),
-            identity: DirectionalModifier(
-                progress: 1,
-                direction: direction.vector
+// MARK: - Transition
+public extension Transition where Self == DirectionalTransition {
+    static func directional(direction: DirectionalDirection = .right) -> Self {
+        DirectionalTransition(direction: direction.vector)
+    }
+}
+
+public struct DirectionalTransition: Transition {
+    let direction: CGVector
+    
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            DirectionalModifier(
+                progress: phase.isIdentity ? 1 : 0,
+                direction: direction
             )
         )
     }
 }
 
+// MARK: - Effect
 struct DirectionalModifier: ViewModifier {
     let progress: Double
     let direction: CGVector
@@ -55,33 +60,7 @@ struct DirectionalModifier: ViewModifier {
                             .float(progress),
                             .float2(Float(direction.dx), Float(direction.dy))
                         ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
-// MARK: - Transition
-public extension Transition where Self == DirectionalTransition {
-    static func directional(direction: DirectionalDirection = .right) -> Self {
-        DirectionalTransition(direction: direction.vector)
-    }
-}
-
-public struct DirectionalTransition: Transition {
-    let direction: CGVector
-    
-    public func body(content: Content, phase: TransitionPhase) -> some View {
-        content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.directional(
-                            .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
-                            .float2(Float(direction.dx), Float(direction.dy))
-                        ),
-                        maxSampleOffset: .zero
+                        maxSampleOffset: geometryProxy.size.scaled(1)
                     )
             }
     }

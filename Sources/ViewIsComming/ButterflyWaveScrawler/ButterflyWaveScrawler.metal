@@ -8,9 +8,12 @@ float butterflyWaveCompute(float2 p, float progress, float2 center, float amplit
     float2 o = p * sin(progress * amplitude) - center;
     // horizontal vector
     float2 h = float2(1.0, 0.0);
-    // butterfly polar
-    float theta = acos(dot(o, h)) * waves;
-    return (exp(cos(theta)) - 2.0 * cos(4.0 * theta) + pow(sin((2.0 * theta - PI) / 24.0), 5.0)) / 10.0;
+    // butterfly polar – acos() needs its argument clamped to stay finite
+    float theta = acos(clamp(dot(o, h), -1.0, 1.0)) * waves;
+    // sin^5 written out: pow() with a negative base is NaN in fast-math Metal
+    float s = sin((2.0 * theta - PI) / 24.0);
+    float s2 = s * s;
+    return (exp(cos(theta)) - 2.0 * cos(4.0 * theta) + s2 * s2 * s) / 10.0;
 }
 
 [[ stitchable ]]
@@ -21,6 +24,11 @@ half4 butterflyWaveScrawler(float2 position,
                             float amplitude,
                             float waves,
                             float colorSeparation) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     // Calculate displacement using butterfly wave function

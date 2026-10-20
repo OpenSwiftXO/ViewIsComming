@@ -28,49 +28,6 @@ public enum PolkaDotsCurtainCenter {
     }
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
-    static func polkaDotsCurtain(
-        dots: Double = 20.0,
-        center: PolkaDotsCurtainCenter = .center
-    ) -> AnyTransition {
-        .modifier(
-            active: PolkaDotsCurtainModifier(
-                progress: 0,
-                dots: dots,
-                center: center.point
-            ),
-            identity: PolkaDotsCurtainModifier(
-                progress: 1,
-                dots: dots,
-                center: center.point
-            )
-        )
-    }
-}
-
-struct PolkaDotsCurtainModifier: ViewModifier {
-    let progress: Double
-    let dots: Double
-    let center: CGPoint
-    
-    func body(content: Content) -> some View {
-        content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.polkaDotsCurtain(
-                            .float2(geometryProxy.size),
-                            .float(progress),
-                            .float(dots),
-                            .float2(Float(center.x), Float(center.y))
-                        ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
 // MARK: - Transition
 public extension Transition where Self == PolkaDotsCurtainTransition {
     static func polkaDotsCurtain(
@@ -86,13 +43,30 @@ public struct PolkaDotsCurtainTransition: Transition {
     let center: CGPoint
     
     public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            PolkaDotsCurtainModifier(
+                progress: phase.isIdentity ? 1 : 0,
+                dots: dots,
+                center: center
+            )
+        )
+    }
+}
+
+// MARK: - Effect
+struct PolkaDotsCurtainModifier: ViewModifier {
+    let progress: Double
+    let dots: Double
+    let center: CGPoint
+    
+    func body(content: Content) -> some View {
         content
             .visualEffect { content, geometryProxy in
                 content
                     .layerEffect(
                         ViewIsCommingShaderLibrary.polkaDotsCurtain(
                             .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
+                            .float(progress),
                             .float(dots),
                             .float2(Float(center.x), Float(center.y))
                         ),

@@ -14,16 +14,27 @@ public enum BookFlipDirection: Sendable {
     }
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
-    static func bookFlip(direction: BookFlipDirection = .right) -> AnyTransition {
-        .modifier(
-            active: BookFlipModifier(progress: 0, direction: direction),
-            identity: BookFlipModifier(progress: 1, direction: direction)
+// MARK: - Transition
+public extension Transition where Self == BookFlipTransition {
+    static func bookFlip(direction: BookFlipDirection = .right) -> Self {
+        BookFlipTransition(direction: direction)
+    }
+}
+
+public struct BookFlipTransition: Transition {
+    let direction: BookFlipDirection
+    
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            BookFlipModifier(
+                progress: phase.isIdentity ? 1 : 0,
+                direction: direction
+            )
         )
     }
 }
 
+// MARK: - Effect
 struct BookFlipModifier: ViewModifier {
     let progress: Double
     let direction: BookFlipDirection
@@ -40,41 +51,7 @@ struct BookFlipModifier: ViewModifier {
                             .float(progress),
                             .float(flipRight)
                         ),
-                        maxSampleOffset: CGSize(
-                            width: geometryProxy.size.width / 2,
-                            height: geometryProxy.size.height / 2
-                        )
-                    )
-            }
-    }
-}
-
-// MARK: - Transition
-public extension Transition where Self == BookFlipTransition {
-    static func bookFlip(direction: BookFlipDirection = .right) -> Self {
-        BookFlipTransition(direction: direction)
-    }
-}
-
-public struct BookFlipTransition: Transition {
-    let direction: BookFlipDirection
-    
-    public func body(content: Content, phase: TransitionPhase) -> some View {
-        let flipRight = direction == .right ? 1.0 : 0.0
-        
-        return content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.bookFlip(
-                            .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
-                            .float(flipRight)
-                        ),
-                        maxSampleOffset: CGSize(
-                            width: geometryProxy.size.width / 2,
-                            height: geometryProxy.size.height / 2
-                        )
+                        maxSampleOffset: geometryProxy.size.scaled(1)
                     )
             }
     }

@@ -3,10 +3,9 @@ import ViewIsComming
 
 struct PowerKaleidoView: View {
     @State private var showView = true
-    // Controls
-    @State private var speed: Double = 2.0
-    @State private var angle: Double = 0.0
-    @State private var power: Double = 2.0
+    @State private var scale: Double = 2.0
+    @State private var z: Double = 1.5
+    @State private var speed: Double = 5.0
     
     var body: some View {
         ScrollView {
@@ -16,9 +15,9 @@ struct PowerKaleidoView: View {
                         .resizable()
                         .transition(
                             .powerKaleido(
-                                speed: speed,
-                                angle: angle,
-                                power: power
+                                scale: scale,
+                                z: z,
+                                speed: speed
                             )
                         )
                 }
@@ -27,46 +26,42 @@ struct PowerKaleidoView: View {
             .frame(maxWidth: .infinity)
             .cornerRadius(20)
             
-            // Controls
             VStack(alignment: .leading, spacing: 15) {
+                VStack(alignment: .leading) {
+                    Text("Scale: \(scale, specifier: "%.2f")")
+                        .font(.caption)
+                    Slider(value: $scale, in: 0.5...5.0)
+                }
+                VStack(alignment: .leading) {
+                    Text("Z: \(z, specifier: "%.2f")")
+                        .font(.caption)
+                    Slider(value: $z, in: 0.0...5.0)
+                }
                 VStack(alignment: .leading) {
                     Text("Speed: \(speed, specifier: "%.1f")")
                         .font(.caption)
                     Slider(value: $speed, in: 0.0...10.0)
                 }
                 
-                VStack(alignment: .leading) {
-                    Text("Angle: \(Int(angle))°")
-                        .font(.caption)
-                    Slider(value: $angle, in: 0.0...360.0)
-                }
-                
-                VStack(alignment: .leading) {
-                    Text("Power: \(Int(power)) segments")
-                        .font(.caption)
-                    Slider(value: $power, in: 1.0...8.0, step: 1.0)
-                }
-                
-                // Preset buttons
                 HStack(spacing: 10) {
-                    Button("Simple") {
-                        speed = 1.0
-                        angle = 0.0
-                        power = 2.0
+                    Button("Default") {
+                        scale = 2.0
+                        z = 1.5
+                        speed = 5.0
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Complex") {
-                        speed = 3.0
-                        angle = 45.0
-                        power = 4.0
+                    Button("Mellow") {
+                        scale = 3.0
+                        z = 0.8
+                        speed = 2.0
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Crazy") {
-                        speed = 6.0
-                        angle = 90.0
-                        power = 6.0
+                    Button("Wild") {
+                        scale = 1.2
+                        z = 3.0
+                        speed = 8.0
                     }
                     .buttonStyle(.bordered)
                 }
@@ -75,7 +70,6 @@ struct PowerKaleidoView: View {
             .background(Color.gray.opacity(0.1))
             .cornerRadius(15)
             
-            // Trigger Button
             Button(action: {
                 withAnimation(.easeInOut(duration: 1.5)) {
                     showView.toggle()
@@ -95,6 +89,3 @@ struct PowerKaleidoView: View {
     }
 }
 
-#Preview {
-    PowerKaleidoView()
-}

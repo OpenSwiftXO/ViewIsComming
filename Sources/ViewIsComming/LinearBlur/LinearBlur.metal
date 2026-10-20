@@ -3,7 +3,7 @@
 using namespace metal;
 
 // LinearBlur transition
-// Adapted from: https://gl-transitions.com/editor/LinearBlur
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/LinearBlur.glsl
 // Author: gre
 // License: MIT
 
@@ -12,28 +12,26 @@ using namespace metal;
                                    float2 size,
                                    float progress,
                                    float intensity) {
-    float2 uv = position / size;
-    
-    // Blur intensity peaks at progress = 0.5
-    float blurAmount = intensity * sin(progress * M_PI_F);
-    
-    // Sample multiple times along a line for blur effect
-    half4 color = half4(0.0);
-    int samples = 13;
-    
-    for (int i = 0; i < samples; i++) {
-        float offset = (float(i) / float(samples - 1) - 0.5) * blurAmount;
-        float2 sampleUV = uv + float2(offset, 0.0);
-        float2 samplePos = sampleUV * size;
-        samplePos = clamp(samplePos, float2(0.0), size);
-        
-        color += layer.sample(samplePos);
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
     }
-    
-    color /= half(samples);
-    
-    // Fade out as progress increases
-    float mask = 1.0 - progress;
-    
-    return color * half(mask);
+
+    float2 uv = position / size;
+    // disp peaks at progress = 0.5 → 0.5 * intensity, zero at endpoints.
+    float disp = intensity * (0.5 - abs(0.5 - progress));
+
+    const int passes = 6;
+    half4 sum = half4(0.0);
+    for (int xi = 0; xi < passes; xi++) {
+        float x = float(xi) / float(passes) - 0.5;
+        for (int yi = 0; yi < passes; yi++) {
+            float y = float(yi) / float(passes) - 0.5;
+            float2 v = float2(x, y);
+            float2 sampleUV = clamp(uv + disp * v, float2(0.0), float2(1.0));
+            sum += layer.sample(sampleUV * size);
+        }
+    }
+    half4 color = sum / half(passes * passes);
+    return color * half(progress);
 }

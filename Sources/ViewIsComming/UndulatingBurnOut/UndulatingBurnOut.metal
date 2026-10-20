@@ -49,6 +49,15 @@ half4 undulatingBurnOut(float2 position,
                         float progress,
                         float smoothness,
                         float2 center) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
+    if (progress <= 0.0) {
+        return half4(0.0h);
+    }
+
     float2 uv = position / size;
     float dist = distance(center, uv);
     // Calculate max radius based on center position

@@ -2,14 +2,13 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// GlitchDisplace - Glitch displacement effect
-// Ported from: https://gl-transitions.com/editor/GlitchDisplace
+// GlitchDisplace transition
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/GlitchDisplace.glsl
 // Author: Matt DesLauriers
 // License: MIT
 
-// Helper: Noise function
 float glitchDisplace_noise(float2 co) {
-    return fract(sin(dot(co, float2(12.9898, 78.233))) * 43758.5453);
+    return fract(sin(dot(co.xy, float2(12.9898, 78.233))) * 43758.5453);
 }
 
 [[ stitchable ]] half4 glitchDisplace(float2 position,
@@ -18,34 +17,34 @@ float glitchDisplace_noise(float2 co) {
                                       float progress,
                                       float intensity,
                                       float frequency) {
-    // Normalize coordinates
-    float2 uv = position / size;
-    
-    // Create glitch displacement
-    float glitchAmount = progress * intensity;
-    
-    // Horizontal displacement based on vertical position
-    float disp = glitchDisplace_noise(float2(floor(uv.y * frequency), progress * 10.0)) - 0.5;
-    
-    // Apply displacement
-    float2 displacedUV = uv;
-    displacedUV.x += disp * glitchAmount;
-    
-    // Sample the layer at displaced position
-    float2 samplePos = displacedUV * size;
-    half4 color = layer.sample(samplePos);
-    
-    // Calculate mask
-    float mask = smoothstep(0.0, 1.0, progress);
-    
-    // Add glitch color separation
-    if (abs(disp) > 0.3) {
-        // RGB split effect on strong glitches
-        float offset = glitchAmount * 0.05;
-        half4 rColor = layer.sample((displacedUV + float2(offset, 0.0)) * size);
-        half4 bColor = layer.sample((displacedUV - float2(offset, 0.0)) * size);
-        color = half4(rColor.r, color.g, bColor.b, color.a);
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
     }
-    
-    return color * half(mask);
+
+    float2 uv = position / size;
+
+    // Block-based per-tile random displacement.
+    float blockSize = max(frequency, 1.0);
+    float2 block = floor(uv * blockSize);
+    float2 uvNoise = block / blockSize;
+    uvNoise += floor(float2(progress * 1200.0, progress * 3500.0)) / blockSize;
+
+    float2 dist = (fract(uvNoise) - 0.5) * 0.3 * (1.0 - progress) * intensity;
+    float2 sampleUV = fract(uv + dist);
+
+    // Channel split on strong jitters for extra glitch flavour.
+    float strength = length(dist);
+    half4 color;
+    if (strength > 0.05) {
+        float offset = strength * 0.15;
+        color.r = layer.sample(fract(sampleUV + float2(offset, 0.0)) * size).r;
+        color.g = layer.sample(sampleUV * size).g;
+        color.b = layer.sample(fract(sampleUV - float2(offset, 0.0)) * size).b;
+        color.a = 1.0;
+    } else {
+        color = layer.sample(sampleUV * size);
+    }
+
+    return color * half(progress);
 }

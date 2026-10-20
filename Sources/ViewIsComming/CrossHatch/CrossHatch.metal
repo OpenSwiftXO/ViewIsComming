@@ -14,6 +14,11 @@ half4 crossHatch(float2 position,
                  float2 center,
                  float threshold,
                  float fadeEdge) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     float dist = distance(center, uv) / threshold;

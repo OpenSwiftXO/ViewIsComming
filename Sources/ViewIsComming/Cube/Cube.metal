@@ -28,6 +28,11 @@ half4 cube(float2 position,
            float persp,
            float unzoom,
            float rotateRight) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     // Mirror UV for left rotation

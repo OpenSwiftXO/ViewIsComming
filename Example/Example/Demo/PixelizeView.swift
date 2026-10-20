@@ -3,7 +3,7 @@ import ViewIsComming
 
 struct PixelizeView: View {
     @State private var showView = true
-    @State private var squaresMin: Double = 2.0
+    @State private var squaresMin: Double = 20.0
     @State private var steps: Double = 20.0
     @State private var smoothTransition: Bool = false
     
@@ -27,9 +27,9 @@ struct PixelizeView: View {
             
             VStack(alignment: .leading, spacing: 15) {
                 VStack(alignment: .leading) {
-                    Text("Minimum Squares: \(Int(squaresMin))")
+                    Text("Squares at peak: \(Int(squaresMin))")
                         .font(.caption)
-                    Slider(value: $squaresMin, in: 1.0...10.0, step: 1.0)
+                    Slider(value: $squaresMin, in: 2.0...50.0, step: 1.0)
                 }
                 
                 VStack(alignment: .leading) {
@@ -44,21 +44,21 @@ struct PixelizeView: View {
                 
                 HStack(spacing: 10) {
                     Button("Subtle") {
-                        squaresMin = 5.0
+                        squaresMin = 40.0
                         steps = 10.0
                         smoothTransition = false
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Default") {
-                        squaresMin = 2.0
+                        squaresMin = 20.0
                         steps = 20.0
                         smoothTransition = false
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Chunky") {
-                        squaresMin = 1.0
+                        squaresMin = 8.0
                         steps = 30.0
                         smoothTransition = false
                     }

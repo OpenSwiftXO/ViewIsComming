@@ -2,41 +2,33 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// Ported from https://github.com/gl-transitions/gl-transitions
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/SimpleZoom.glsl
 // Author: 0gust1
 // License: MIT
+// SwiftUI single-view adaptation: the original zooms into its outgoing image
+// before fading it out, so the view plays that "from" branch in reverse – it
+// starts zoomed in and faded out and settles into place. SwiftUI plays the same
+// effect forwards when the view is removed.
 
 [[ stitchable ]] half4 simpleZoom(float2 position,
                                   SwiftUI::Layer layer,
                                   float2 size,
                                   float progress,
                                   float zoomQuickness) {
-    // Normalize coordinates
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
-    float2 center = float2(0.5, 0.5);
-    
-    // Clamp quickness to valid range
+    float t = 1.0 - progress;
+
     float nQuick = clamp(zoomQuickness, 0.2, 1.0);
-    
-    // Calculate zoom amount with smoothstep
-    float zoomAmount = smoothstep(0.0, nQuick, progress);
-    
-    // Zoom function: scale UV from center
-    float2 zoomedUV = center + ((uv - center) * (1.0 - zoomAmount));
-    
-    // Sample with zoomed coordinates
-    float2 zoomedPos = zoomedUV * size;
-    
-    // Bounds check
-    bool inBounds = zoomedUV.x >= 0.0 && zoomedUV.x <= 1.0 && zoomedUV.y >= 0.0 && zoomedUV.y <= 1.0;
-    
-    half4 color = inBounds ? layer.sample(zoomedPos) : half4(0.0);
-    
-    // Calculate fade-out mask
-    float fadeMask = smoothstep(nQuick - 0.2, 1.0, progress);
-    
-    // Combine zoom and fade: at progress=0 fully visible, at progress=1 zoomed and faded out
-    float mask = 1.0 - fadeMask;
-    
-    return color * half(mask);
+    float amount = smoothstep(0.0, nQuick, t);
+
+    float2 zoomedUV = 0.5 + (uv - 0.5) * (1.0 - amount);
+    half4 color = layer.sample(zoomedUV * size);
+
+    float fade = smoothstep(nQuick - 0.2, 1.0, t);
+    return color * half(1.0 - fade);
 }

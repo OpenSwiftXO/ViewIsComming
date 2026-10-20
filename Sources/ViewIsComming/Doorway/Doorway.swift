@@ -1,49 +1,86 @@
 import SwiftUI
 
-// MARK: - AnyTransition
-public extension AnyTransition {
+// MARK: - Transition
+public extension Transition where Self == AsymmetricTransition<DoorwayTransition, DoorwayTransition> {
+    /// The view zooms in over a reflective floor and splits open like a door when it is removed.
+    /// - Parameters:
+    ///   - reflection: Strength of the reflection (default: 0.4)
+    ///   - perspective: Perspective of the opening doors (default: 0.4)
+    ///   - depth: How far the view starts away from the viewer (default: 3.0)
     static func doorway(
         reflection: Double = 0.4,
         perspective: Double = 0.4,
         depth: Double = 3.0
-    ) -> AnyTransition {
-        .asymmetric(
-            insertion: .modifier(
-                active: DoorwayModifier(
-                    progress: 0,
-                    depth: depth,
-                    perspective: perspective,
-                    reflection: reflection,
-                    isInsertion: true
-                ),
-                identity: DoorwayModifier(
-                    progress: 1,
-                    depth: depth,
-                    perspective: perspective,
-                    reflection: reflection,
-                    isInsertion: true
-                )
+    ) -> Self {
+        AsymmetricTransition(
+            insertion: DoorwayTransition(
+                depth: depth,
+                perspective: perspective,
+                reflection: reflection,
+                isInsertion: true
             ),
-            removal: .modifier(
-                active: DoorwayModifier(
-                    progress: 1,
-                    depth: depth,
-                    perspective: perspective,
-                    reflection: reflection,
-                    isInsertion: false
-                ),
-                identity: DoorwayModifier(
-                    progress: 0,
-                    depth: depth,
-                    perspective: perspective,
-                    reflection: reflection,
-                    isInsertion: false
-                )
+            removal: DoorwayTransition(
+                depth: depth,
+                perspective: perspective,
+                reflection: reflection,
+                isInsertion: false
             )
         )
     }
 }
 
+public extension Transition where Self == DoorwayTransition {
+    /// Only the insertion half of `doorway(reflection:perspective:depth:)`.
+    static func doorwayIn(
+        reflection: Double = 0.4,
+        perspective: Double = 0.4,
+        depth: Double = 3.0
+    ) -> Self {
+        DoorwayTransition(
+            depth: depth,
+            perspective: perspective,
+            reflection: reflection,
+            isInsertion: true
+        )
+    }
+    
+    /// Only the removal half of `doorway(reflection:perspective:depth:)`.
+    static func doorwayOut(
+        reflection: Double = 0.4,
+        perspective: Double = 0.4,
+        depth: Double = 3.0
+    ) -> Self {
+        DoorwayTransition(
+            depth: depth,
+            perspective: perspective,
+            reflection: reflection,
+            isInsertion: false
+        )
+    }
+}
+
+public struct DoorwayTransition: Transition {
+    let depth: Double
+    let perspective: Double
+    let reflection: Double
+    let isInsertion: Bool
+    
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        // Insertion plays towards progress 1, removal towards progress 0.
+        let visible = isInsertion ? 1.0 : 0.0
+        return content.modifier(
+            DoorwayModifier(
+                progress: phase.isIdentity ? visible : 1.0 - visible,
+                depth: depth,
+                perspective: perspective,
+                reflection: reflection,
+                isInsertion: isInsertion
+            )
+        )
+    }
+}
+
+// MARK: - Effect
 struct DoorwayModifier: ViewModifier {
     let progress: Double
     let depth: Double
@@ -64,7 +101,7 @@ struct DoorwayModifier: ViewModifier {
                             .float(reflection),
                             .float(isInsertion ? 1.0 : 0.0)
                         ),
-                        maxSampleOffset: .zero
+                        maxSampleOffset: geometryProxy.size.scaled(1)
                     )
             }
     }

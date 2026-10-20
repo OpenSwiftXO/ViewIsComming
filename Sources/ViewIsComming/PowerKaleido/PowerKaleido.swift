@@ -1,41 +1,45 @@
 import SwiftUI
 
-// MARK: - AnyTransition (Legacy support for iOS 16+)
-public extension AnyTransition {
-    /// A transition that creates a powerful kaleidoscope effect.
+// MARK: - Transition
+public extension Transition where Self == PowerKaleidoTransition {
+    /// A transition that creates a recursive-reflection kaleidoscope.
     ///
     /// - Parameters:
-    ///   - speed: Rotation speed (0.0 to 10.0). Default is 2.0.
-    ///   - angle: Starting angle in degrees. Default is 0.0.
-    ///   - power: Number of segments (1.0 to 8.0). Default is 2.0.
-    /// - Returns: A transition that creates a kaleidoscope effect.
+    ///   - scale: Overall zoom of the kaleidoscope pattern. Default is 2.0.
+    ///   - z: Distortion depth. Default is 1.5.
+    ///   - speed: Rotation speed. Default is 5.0.
     static func powerKaleido(
-        speed: Double = 2.0,
-        angle: Double = 0.0,
-        power: Double = 2.0
-    ) -> AnyTransition {
-        .modifier(
-            active: PowerKaleidoModifier(
-                progress: 0,
-                speed: speed,
-                angle: angle,
-                power: power
-            ),
-            identity: PowerKaleidoModifier(
-                progress: 1,
-                speed: speed,
-                angle: angle,
-                power: power
+        scale: Double = 2.0,
+        z: Double = 1.5,
+        speed: Double = 5.0
+    ) -> Self {
+        PowerKaleidoTransition(scale: scale, z: z, speed: speed)
+    }
+}
+
+public struct PowerKaleidoTransition: Transition {
+    let scale: Double
+    let z: Double
+    let speed: Double
+    
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            PowerKaleidoModifier(
+                progress: phase.isIdentity ? 1 : 0,
+                scale: scale,
+                z: z,
+                speed: speed
             )
         )
     }
 }
 
+// MARK: - Effect
 struct PowerKaleidoModifier: ViewModifier {
     let progress: Double
+    let scale: Double
+    let z: Double
     let speed: Double
-    let angle: Double
-    let power: Double
     
     func body(content: Content) -> some View {
         content
@@ -45,56 +49,11 @@ struct PowerKaleidoModifier: ViewModifier {
                         ViewIsCommingShaderLibrary.powerKaleido(
                             .float2(geometryProxy.size),
                             .float(progress),
-                            .float(speed),
-                            .float(angle),
-                            .float(power)
+                            .float(scale),
+                            .float(z),
+                            .float(speed)
                         ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
-// MARK: - Transition (iOS 17+)
-public extension Transition where Self == PowerKaleidoTransition {
-    /// A transition that creates a powerful kaleidoscope effect.
-    ///
-    /// - Parameters:
-    ///   - speed: Rotation speed (0.0 to 10.0). Default is 2.0.
-    ///   - angle: Starting angle in degrees. Default is 0.0.
-    ///   - power: Number of segments (1.0 to 8.0). Default is 2.0.
-    /// - Returns: A transition that creates a kaleidoscope effect.
-    static func powerKaleido(
-        speed: Double = 2.0,
-        angle: Double = 0.0,
-        power: Double = 2.0
-    ) -> Self {
-        PowerKaleidoTransition(
-            speed: speed,
-            angle: angle,
-            power: power
-        )
-    }
-}
-
-public struct PowerKaleidoTransition: Transition {
-    let speed: Double
-    let angle: Double
-    let power: Double
-    
-    public func body(content: Content, phase: TransitionPhase) -> some View {
-        content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.powerKaleido(
-                            .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
-                            .float(speed),
-                            .float(angle),
-                            .float(power)
-                        ),
-                        maxSampleOffset: .zero
+                        maxSampleOffset: geometryProxy.size.scaled(1)
                     )
             }
     }

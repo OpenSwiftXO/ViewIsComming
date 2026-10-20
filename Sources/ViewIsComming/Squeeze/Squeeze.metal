@@ -3,59 +3,39 @@
 using namespace metal;
 
 // Squeeze transition
-// Adapted from: https://gl-transitions.com/editor/squeeze
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/squeeze.glsl
 // Author: gre
 // License: MIT
+// SwiftUI single-view adaptation: the appearing view un-squeezes vertically
+// from a thin horizontal line at progress 0 to full size at progress 1.
 
 [[ stitchable ]] half4 squeeze(float2 position,
                                 SwiftUI::Layer layer,
                                 float2 size,
                                 float progress,
                                 float colorSeparation) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
-    
-    // Squeeze effect - compress from both sides
-    // The image gets squeezed horizontally as it transitions
-    float squeezeAmount = 1.0 - progress;
-    
-    // Calculate the squeeze factor (how much to compress)
-    float t = 0.5 - abs(progress - 0.5);
-    
-    // Chromatic aberration color separation during squeeze
-    float y = 0.5 + (uv.y - 0.5) / (1.0 - t);
-    
-    // Check if we're outside the squeezed region
+    float p = max(progress, 0.0001);
+
+    // Inverse of the gl-transitions "from" squeeze – the view is compressed
+    // into a thin band at progress 0 and stretched to full height at 1.
+    float y = 0.5 + (uv.y - 0.5) / p;
     if (y < 0.0 || y > 1.0) {
         return half4(0.0);
     }
-    
-    // Calculate position with squeeze
-    float2 squeezedPos = position;
-    squeezedPos.y = y * size.y;
-    
-    // Add color separation effect
+
+    float inv = 1.0 - progress;
+    float2 fp = float2(uv.x, y);
     half4 color = half4(0.0);
-    
-    // Sample red with slight offset
-    float2 redPos = squeezedPos;
-    redPos.y += colorSeparation * t * size.y;
-    redPos = clamp(redPos, float2(0.0), size);
-    color.r = layer.sample(redPos).r;
-    
-    // Sample green normally
-    color.g = layer.sample(squeezedPos).g;
-    
-    // Sample blue with opposite offset
-    float2 bluePos = squeezedPos;
-    bluePos.y -= colorSeparation * t * size.y;
-    bluePos = clamp(bluePos, float2(0.0), size);
-    color.b = layer.sample(bluePos).b;
-    
-    // Alpha is based on whether we're in the transition
-    color.a = half(squeezeAmount > 0.0 ? 1.0 : 0.0);
-    
-    // Fade based on progress
-    float mask = 1.0 - progress;
-    
-    return color * half(mask);
+    color.r = layer.sample((fp - inv * float2(0.0, colorSeparation)) * size).r;
+    color.g = layer.sample(fp * size).g;
+    color.b = layer.sample((fp + inv * float2(0.0, colorSeparation)) * size).b;
+    color.a = 1.0;
+    // Ensure fully hidden at progress=0 (guards the 1-pixel center line).
+    return color * half(saturate(progress / 0.01));
 }

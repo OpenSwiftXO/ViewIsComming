@@ -7,6 +7,11 @@ half4 glitchMemories(float2 position,
                      SwiftUI::Layer layer,
                      float2 size,
                      float progress) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     // Normalize coordinates
     float2 uv = position / size;
     // Calculate block-based noise for glitch effect

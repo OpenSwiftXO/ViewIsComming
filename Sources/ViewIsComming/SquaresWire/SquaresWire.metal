@@ -10,6 +10,11 @@ half4 squaresWire(float2 position,
                   float2 squares,
                   float2 direction,
                   float smoothness) {
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
     float2 center = float2(0.5, 0.5);
     // Normalize direction vector

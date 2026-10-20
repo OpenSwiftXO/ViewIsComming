@@ -2,10 +2,12 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// Fold - Folding effect
-// Ported from: https://gl-transitions.com/editor/fold
+// Fold transition
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/fold.glsl
 // Author: bobylito
 // License: MIT
+// SwiftUI single-view adaptation: the appearing view is compressed into the
+// right-hand strip `progress` wide and expands to full width as progress→1.
 
 [[ stitchable ]] half4 fold(float2 position,
                             SwiftUI::Layer layer,
@@ -13,42 +15,26 @@ using namespace metal;
                             float progress,
                             float folds,
                             float intensity) {
-    // Normalize coordinates
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
+    }
+
     float2 uv = position / size;
-    
-    // Center coordinates
-    float2 centered = uv - 0.5;
-    
-    // Calculate angle based on position and progress
-    float angle = progress * 3.14159265359;
-    
-    // Calculate which fold we're in
-    float foldNum = floor(centered.x * folds);
-    float foldPos = fract(centered.x * folds);
-    
-    // Calculate fold intensity
-    float foldIntensity = sin(angle + foldNum) * intensity;
-    
-    // Distort based on fold
-    float2 distorted = centered;
-    distorted.y += sin(foldPos * 3.14159265359) * foldIntensity;
-    
-    // Back to UV space
-    distorted += 0.5;
-    
-    // Sample the layer
-    half4 color = layer.sample(position);
-    
-    // Calculate mask based on visibility
-    float mask = 1.0;
-    
-    // Fade based on fold intensity
-    float visibility = 1.0 - abs(foldIntensity) * progress;
-    mask = smoothstep(0.0, 1.0, visibility);
-    
-    // Add shadow effect
-    float shadow = 1.0 - abs(sin(angle + foldNum)) * 0.3 * progress;
-    color = color * half(shadow);
-    
-    return color * half(mask);
+    float threshold = 1.0 - progress;
+    if (uv.x < threshold) {
+        return half4(0.0);
+    }
+
+    float p = max(progress, 0.0001);
+    float sx = (uv.x - threshold) / p;
+    float2 sampleUV = float2(sx, uv.y);
+
+    half4 color = layer.sample(sampleUV * size);
+
+    // Optional folded-paper shading: darken by sine of local fold position.
+    float foldCount = max(folds, 1.0);
+    float foldPos = fract(sx * foldCount);
+    float shade = 1.0 - intensity * (1.0 - progress) * sin(foldPos * 3.14159265359);
+    return color * half(shade);
 }

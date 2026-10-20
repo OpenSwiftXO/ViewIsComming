@@ -3,45 +3,30 @@
 using namespace metal;
 
 // Dreamy transition
-// Adapted from: https://gl-transitions.com/editor/Dreamy
+// Ported from: https://github.com/gl-transitions/gl-transitions/blob/master/transitions/Dreamy.glsl
 // Author: mikolalysenko
 // License: MIT
+// SwiftUI single-view adaptation: sample the "to" branch of the original
+// transition (the view shakes vertically with a sine offset while fading in).
 
 [[ stitchable ]] half4 dreamy(float2 position,
                                SwiftUI::Layer layer,
                                float2 size,
                                float progress) {
-    float2 uv = position / size;
-    
-    // Dreamy effect - creates a blur/displacement that peaks at progress 0.5
-    // The image appears to "dream" or become ethereal in the middle of transition
-    float displacement = 2.0 * abs(progress - 0.5);
-    
-    // Sample multiple times with slight offsets to create blur
-    half4 color = half4(0.0);
-    float total = 0.0;
-    
-    // Number of samples for the blur
-    const int samples = 9;
-    
-    for (int i = 0; i < samples; i++) {
-        float angle = float(i) * 2.0 * M_PI_F / float(samples);
-        float2 offset = float2(cos(angle), sin(angle)) * displacement * 0.03;
-        
-        float2 samplePos = (uv + offset) * size;
-        samplePos = clamp(samplePos, float2(0.0), size);
-        
-        // Weight samples by their distance from center
-        float weight = 1.0 - float(abs(i - samples/2)) / float(samples/2);
-        
-        color += layer.sample(samplePos) * half(weight);
-        total += weight;
+    // Resting state: nothing to do once the transition has completed.
+    if (progress >= 1.0) {
+        return layer.sample(position);
     }
-    
-    color /= half(total);
-    
-    // Calculate mask - fade out as progress increases
-    float mask = 1.0 - progress;
-    
-    return color * half(mask);
+
+    float2 uv = position / size;
+    float inv = 1.0 - progress;
+    float shifty = 0.03 * inv * cos(10.0 * (inv + uv.x));
+    float2 sampleUV = uv + float2(0.0, shifty);
+
+    if (sampleUV.y < 0.0 || sampleUV.y > 1.0) {
+        return half4(0.0);
+    }
+
+    half4 color = layer.sample(sampleUV * size);
+    return color * half(progress);
 }

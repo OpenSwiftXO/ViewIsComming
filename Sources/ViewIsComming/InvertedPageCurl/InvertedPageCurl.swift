@@ -10,20 +10,24 @@ public enum InvertedPageCurlEdge: Sendable {
     case bottom
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
+// MARK: - Transition
+public extension Transition where Self == InvertedPageCurlTransition {
     static func invertedPageCurl(
         direction: InvertedPageCurlDirection = .rightToLeft,
         edge: InvertedPageCurlEdge = .top
-    ) -> AnyTransition {
-        .modifier(
-            active: InvertedPageCurlModifier(
-                progress: 0,
-                direction: direction,
-                edge: edge
-            ),
-            identity: InvertedPageCurlModifier(
-                progress: 1,
+    ) -> Self {
+        InvertedPageCurlTransition(direction: direction, edge: edge)
+    }
+}
+
+public struct InvertedPageCurlTransition: Transition {
+    let direction: InvertedPageCurlDirection
+    let edge: InvertedPageCurlEdge
+    
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            InvertedPageCurlModifier(
+                progress: phase.isIdentity ? 1 : 0,
                 direction: direction,
                 edge: edge
             )
@@ -31,6 +35,7 @@ public extension AnyTransition {
     }
 }
 
+// MARK: - Effect
 struct InvertedPageCurlModifier: ViewModifier {
     let progress: Double
     let direction: InvertedPageCurlDirection
@@ -50,41 +55,7 @@ struct InvertedPageCurlModifier: ViewModifier {
                             .float(directionValue),
                             .float(edgeValue)
                         ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
-// MARK: - Transition
-public extension Transition where Self == InvertedPageCurlTransition {
-    static func invertedPageCurl(
-        direction: InvertedPageCurlDirection = .rightToLeft,
-        edge: InvertedPageCurlEdge = .top
-    ) -> Self {
-        InvertedPageCurlTransition(direction: direction, edge: edge)
-    }
-}
-
-public struct InvertedPageCurlTransition: Transition {
-    let direction: InvertedPageCurlDirection
-    let edge: InvertedPageCurlEdge
-    
-    public func body(content: Content, phase: TransitionPhase) -> some View {
-        let directionValue = direction == .rightToLeft ? 1.0 : 0.0
-        let edgeValue = edge == .top ? 1.0 : 0.0
-        
-        content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.invertedPageCurl(
-                            .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
-                            .float(directionValue),
-                            .float(edgeValue)
-                        ),
-                        maxSampleOffset: .zero
+                        maxSampleOffset: geometryProxy.size.scaled(1)
                     )
             }
     }

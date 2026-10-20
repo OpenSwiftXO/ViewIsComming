@@ -24,54 +24,6 @@ public enum SquaresWireDirection {
     }
 }
 
-// MARK: - AnyTransition
-public extension AnyTransition {
-    static func squaresWire(
-        squares: Int = 10,
-        direction: SquaresWireDirection = .upRight,
-        smoothness: Double = 1.6
-    ) -> AnyTransition {
-        .modifier(
-            active: SquaresWireModifier(
-                progress: 0,
-                squares: squares,
-                direction: direction.vector,
-                smoothness: smoothness
-            ),
-            identity: SquaresWireModifier(
-                progress: 1,
-                squares: squares,
-                direction: direction.vector,
-                smoothness: smoothness
-            )
-        )
-    }
-}
-
-struct SquaresWireModifier: ViewModifier {
-    let progress: Double
-    let squares: Int
-    let direction: CGPoint
-    let smoothness: Double
-    
-    func body(content: Content) -> some View {
-        content
-            .visualEffect { content, geometryProxy in
-                content
-                    .layerEffect(
-                        ViewIsCommingShaderLibrary.squaresWire(
-                            .float2(geometryProxy.size),
-                            .float(progress),
-                            .float2(Float(squares), Float(squares)),
-                            .float2(Float(direction.x), Float(direction.y)),
-                            .float(smoothness)
-                        ),
-                        maxSampleOffset: .zero
-                    )
-            }
-    }
-}
-
 // MARK: - Transition
 public extension Transition where Self == SquaresWireTransition {
     static func squaresWire(
@@ -93,13 +45,32 @@ public struct SquaresWireTransition: Transition {
     let smoothness: Double
     
     public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.modifier(
+            SquaresWireModifier(
+                progress: phase.isIdentity ? 1 : 0,
+                squares: squares,
+                direction: direction,
+                smoothness: smoothness
+            )
+        )
+    }
+}
+
+// MARK: - Effect
+struct SquaresWireModifier: ViewModifier {
+    let progress: Double
+    let squares: Int
+    let direction: CGPoint
+    let smoothness: Double
+    
+    func body(content: Content) -> some View {
         content
             .visualEffect { content, geometryProxy in
                 content
                     .layerEffect(
                         ViewIsCommingShaderLibrary.squaresWire(
                             .float2(geometryProxy.size),
-                            .float(phase.isIdentity ? 1 : 0),
+                            .float(progress),
                             .float2(Float(squares), Float(squares)),
                             .float2(Float(direction.x), Float(direction.y)),
                             .float(smoothness)
